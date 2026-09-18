@@ -6,9 +6,10 @@ import { getGroupById, updateGroup, deleteGroup } from "@/lib/data";
 // GET /api/groups/:id — read one group. Stays PUBLIC — no changes needed.
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const group = await getGroupById(params.id);
+  const { id } = await params;
+  const group = await getGroupById(id);
 
   if (!group) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
@@ -17,27 +18,19 @@ export async function GET(
   return NextResponse.json(group);
 }
 
-// TODO (Step 13): PATCH /api/groups/:id — partially update a group.
-// Requires authentication AND ownership: only the group's owner may edit it.
-//
-// 1. Get the session. If none, return 401.
-// 2. Fetch the group with getGroupById(params.id). If not found, return 404.
-// 3. THIS IS THE ROLE-BASED ACCESS CONTROL CHECK: if group.ownerId !==
-//    session.user.id, return 403 — being logged in isn't enough, you must
-//    be THIS group's owner.
-// 4. Otherwise, parse the body and call updateGroup(params.id, body).
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json(
-      {error: "Unauthorized"},
-      { status: 401  }
+      { error: "Unauthorized" },
+      { status: 401 }
     )
   }
-const group = await getGroupById(params.id);
+  const group = await getGroupById(id);
   if (!group) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
   }
@@ -48,7 +41,7 @@ const group = await getGroupById(params.id);
     );
   }
   const body = await request.json();
-  const updated = await updateGroup(params.id, body);
+  const updated = await updateGroup(id, body);
 
   if (!updated) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
@@ -57,19 +50,19 @@ const group = await getGroupById(params.id);
   return NextResponse.json(updated);
 }
 
-// TODO (Step 13): DELETE /api/groups/:id — same auth + ownership pattern as PATCH.
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json(
-      {error: "Unauthorized"},
-      { status: 401  }
+      { error: "Unauthorized" },
+      { status: 401 }
     )
   }
-  const group = await getGroupById(params.id);
+  const group = await getGroupById(id);
   if (!group) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
   }
@@ -80,7 +73,7 @@ export async function DELETE(
     );
   }
 
-  const deleted = await deleteGroup(params.id);
+  const deleted = await deleteGroup(id);
 
   if (!deleted) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
