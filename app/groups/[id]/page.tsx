@@ -9,13 +9,14 @@ import TaskItem from "@/components/TaskItem";
 export default async function GroupDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
+
   const [group, session] = await Promise.all([
-    getGroupById(params.id),
+    getGroupById(id),
     getServerSession(authOptions),
   ]);
-
 
   if (!group) {
     notFound();
@@ -33,13 +34,16 @@ export default async function GroupDetailPage({
             {group.owner.name}
           </p>
         </div>
+
         {isOwner && <DeleteGroupButton groupId={group.id} />}
       </div>
 
       <div className="mt-8 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Tasks</h2>
+
         {isOwner && <NewTaskForm groupId={group.id} />}
       </div>
+
       <ul className="mt-3 flex flex-col gap-2">
         {group.tasks.map((task) => (
           <TaskItem

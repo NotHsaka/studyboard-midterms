@@ -8,8 +8,9 @@ import { getGroupById, updateTask, deleteTask } from "@/lib/data";
 // Same 3-check pattern as before: session -> group exists -> group.ownerId matches.
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string; taskId: string } }
+  { params }: { params: Promise<{ id: string; taskId: string } > }
 ) {
+  const { id, taskId } = await params;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json(
@@ -17,7 +18,7 @@ export async function PATCH(
       { status: 401  }
     )
   }
-  const group = await getGroupById(params.id);
+  const group = await getGroupById(id);
   if (!group) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
   }
@@ -29,7 +30,7 @@ export async function PATCH(
   }
 
   const body = await request.json();
-  const updated = await updateTask(params.id, params.taskId, body);
+  const updated = await updateTask(id, taskId, body);
 
   if (!updated) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
