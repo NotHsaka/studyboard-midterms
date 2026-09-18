@@ -41,9 +41,10 @@ export async function PATCH(
 
 // TODO (Step 15): DELETE /api/groups/:id/tasks/:taskId — same pattern as PATCH.
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string; taskId: string } }
+  req: Request,
+  { params }: { params: Promise<{ id: string; taskId: string } > }
 ) {
+  const { id , taskId } = await params;
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json(
@@ -52,7 +53,7 @@ export async function DELETE(
     )
   }
 
-  const group = await getGroupById(params.id);
+  const group = await getGroupById(id);
   if (!group) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
   }
@@ -62,7 +63,7 @@ export async function DELETE(
       { status: 403 }
     );
   }
-  const deleted = await deleteTask(params.id, params.taskId);
+  const deleted = await deleteTask(id,taskId);
 
   if (!deleted) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });

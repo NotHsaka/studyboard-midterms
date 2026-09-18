@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Task } from "@/lib/data";
+import Button from "@/components/Button";
 
 export default function TaskItem({
   task,
@@ -21,26 +22,28 @@ export default function TaskItem({
   async function handleToggle() {
     if (!isOwner) return;
 
-    const previous = done;
-    const next = !done;
-
-    setDone(next); 
+    const previousDone = done;
+    const nextDone = !previousDone;
+    setDone(nextDone);
     setError("");
 
     try {
-      const res = await fetch(`/api/groups/${groupId}/tasks/${task.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ done: next }),
-      });
+      const response = await fetch(
+        `/api/groups/${groupId}/tasks/${task.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ done: nextDone }),
+        }
+      );
 
-      if (!res.ok) {
-        setDone(previous); 
-        setError("Failed to update task.");
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to update task");
       }
-    } catch {
-      setDone(previous);
-      setError("Failed to update task.");
+    } catch (err) {
+      setDone(previousDone);
+      setError(err instanceof Error ? err.message : "Could not update task");
     }
   }
 
@@ -51,48 +54,47 @@ export default function TaskItem({
     setError("");
 
     try {
-      const res = await fetch(`/api/groups/${groupId}/tasks/${task.id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/groups/${groupId}/tasks/${task.id}`,
+        { method: "DELETE" }
+      );
 
-      if (!res.ok) {
-        setError("Failed to delete task.");
-        setIsDeleting(false);
-        return;
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to delete task");
       }
 
-  
       router.refresh();
-    } catch {
-      setError("Failed to delete task.");
+    } catch (err) {
       setIsDeleting(false);
+      setError(err instanceof Error ? err.message : "Could not delete task");
     }
   }
 
   return (
-    <li className="rounded-md border px-3 py-2">
-      <div className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          checked={done}
-          onChange={handleToggle}
-          disabled={!isOwner || isDeleting}
-          className="h-4 w-4 disabled:opacity-50"
-        />
-        <span className={`flex-1 ${done ? "line-through text-gray-400" : ""}`}>
-          {task.title}
-        </span>
-        {isOwner && (
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="text-sm text-red-600 hover:underline disabled:opacity-50"
-          >
-            {isDeleting ? "Deleting..." : "Delete"}
-          </button>
-        )}
-      </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+    <li className="flex items-center gap-3 rounded-md border px-3 py-2">
+      <input
+        type="checkbox"
+        checked={done}
+        onChange={handleToggle}
+        disabled={!isOwner || isDeleting}
+        className="h-4 w-4"
+      />
+      <span className={done ? "line-through text-gray-400" : ""}>
+        {task.title}
+      </span>
+      {isOwner && (
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="ml-auto px-2 py-1 text-xs"
+        >
+          {isDeleting ? "Deleting..." : "Delete"}
+        </Button>
+      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </li>
   );
 }
