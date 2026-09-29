@@ -80,4 +80,4 @@ export async function DELETE(
   }
 
   return NextResponse.json({ message: "Group deleted" });
-}
+} 
