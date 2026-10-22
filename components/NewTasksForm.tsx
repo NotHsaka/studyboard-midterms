@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
+import { useRouter } from 'next/navigation';
+import Button from "./Button";
+import { socket } from "@/lib/socketClients";
 
 export default function NewTaskForm({ groupId }: { groupId: string }) {
   const router = useRouter();
@@ -15,27 +16,25 @@ export default function NewTaskForm({ groupId }: { groupId: string }) {
     setError("");
     setIsSubmitting(true);
 
-    try {
-      const res = await fetch(`/api/groups/${groupId}/tasks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
-      });
+    const res = await fetch(`/api/groups/${groupId}/tasks`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "X-Socket-Id": socket.id ?? "",
+      },
+      body: JSON.stringify({ title }),
+    });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Failed to add task.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      setTitle("");
-      router.refresh();
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Failed to add task.");
       setIsSubmitting(false);
+      return;
     }
+
+    setTitle("");
+    setIsSubmitting(false);
+    router.refresh();
   }
 
   return (

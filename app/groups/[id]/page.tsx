@@ -3,10 +3,11 @@ import { getServerSession } from "next-auth";
 import { getGroupById } from "@/lib/data";
 import { authOptions } from "@/lib/auth";
 import DeleteGroupButton from "@/components/DeleteGroupButton";
-import NewTasksForm from "@/components/NewTasksForm";
+import NewTaskForm from "@/components/NewTasksForm";
 import TaskItem from "@/components/TaskItem";
 import BookSearch from "@/components/BookSearch";
 import AISubtaskSuggester from "@/components/AISubtaskSuggester";
+import RealtimeNotifications from "@/components/RealTimeNotifications";
 
 export default async function GroupDetailPage({
   params,
@@ -40,6 +41,7 @@ export default async function GroupDetailPage({
       <div className="mt-8 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Tasks</h2>
       </div>
+
       <ul className="mt-3 flex flex-col gap-2">
         {group.tasks.map((task) => (
           <TaskItem
@@ -56,7 +58,7 @@ export default async function GroupDetailPage({
 
       {isOwner && (
         <div className="mt-4">
-          <NewTasksForm groupId={group.id} />
+          <NewTaskForm groupId={group.id} />
         </div>
       )}
 
@@ -73,6 +75,7 @@ export default async function GroupDetailPage({
           <AISubtaskSuggester groupId={group.id} />
         </div>
       )}
+      <RealtimeNotifications groupId={group.id} />
     </div>
   );
 }
