@@ -9,10 +9,12 @@ export default function TaskItem({
   task,
   groupId,
   isOwner,
+  onToggled,
 }: {
   task: Task;
   groupId: string;
   isOwner: boolean;
+  onToggled?: (taskId: string, done: boolean) => void;
 }) {
   const router = useRouter();
   const [done, setDone] = useState(task.done);
@@ -26,6 +28,7 @@ export default function TaskItem({
     const next = !done;
 
     setDone(next);
+    onToggled?.(task.id, next);
     setError("");
 
     const res = await fetch(`/api/groups/${groupId}/tasks/${task.id}`, {
@@ -39,6 +42,7 @@ export default function TaskItem({
 
     if (!res.ok) {
       setDone(previous);
+      onToggled?.(task.id, previous);
       const isJson = res.headers.get("content-type")?.includes("application/json");
       const data = isJson ? await res.json() : null;
       setError(data?.error ?? `Failed to update task (status ${res.status}).`);

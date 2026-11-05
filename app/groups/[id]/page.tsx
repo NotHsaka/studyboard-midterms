@@ -4,10 +4,11 @@ import { getGroupById } from "@/lib/data";
 import { authOptions } from "@/lib/auth";
 import DeleteGroupButton from "@/components/DeleteGroupButton";
 import NewTaskForm from "@/components/NewTasksForm";
-import TaskItem from "@/components/TaskItem";
+import TaskList from "@/components/TaskList";
 import BookSearch from "@/components/BookSearch";
 import AISubtaskSuggester from "@/components/AISubtaskSuggester";
 import RealtimeNotifications from "@/components/RealTimeNotifications";
+import FocusTimer from "@/components/FocusTimer";
 
 export default async function GroupDetailPage({
   params,
@@ -42,25 +43,23 @@ export default async function GroupDetailPage({
         <h2 className="text-lg font-semibold">Tasks</h2>
       </div>
 
-      <ul className="mt-3 flex flex-col gap-2">
-        {group.tasks.map((task) => (
-          <TaskItem
-            key={task.id}
-            task={task}
-            groupId={group.id}
-            isOwner={isOwner}
-          />
-        ))}
-        {group.tasks.length === 0 && (
-          <p className="text-sm text-gray-500">No tasks yet.</p>
-        )}
-      </ul>
+      <div className="mt-3">
+        <TaskList
+          tasks={group.tasks}
+          groupId={group.id}
+          isOwner={isOwner}
+        />
+      </div>
 
       {isOwner && (
         <div className="mt-4">
           <NewTaskForm groupId={group.id} />
         </div>
       )}
+
+      <div className="mt-8">
+        <FocusTimer groupId={group.id} isOwner={isOwner} />
+      </div>
 
       <h2 className="mt-10 text-lg font-semibold">Reference Books</h2>
       <p className="mt-1 text-sm text-gray-500">

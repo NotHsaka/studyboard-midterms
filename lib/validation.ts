@@ -26,3 +26,7 @@ export const updateTaskSchema = z
   .refine((data) => data.title !== undefined || data.done !== undefined, {
     message: "Nothing to update",
   });
+
+export const focusTimerSchema = z.object({
+  minutes: z.number().int().min(1, "Minimum is 1 minute").max(120, "Maximum is 120 minutes"),
+});

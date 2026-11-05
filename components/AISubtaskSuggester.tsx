@@ -17,7 +17,7 @@ export default function AISubtaskSuggester({ groupId }: { groupId: string }) {
     async function handleGenerate(e: FormEvent) {
         e.preventDefault();
         setError("");
-        setIsGenerating(true);
+      setIsGenerating(true);
         setSuggestions([]);
         setChecked(new Set());
 
